@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { shortenUrl, ShortenResult } from '../api/client';
 
-export function ShortenForm() {
+interface Props {
+  onShorten?: (result: ShortenResult & { originalUrl: string }) => void;
+}
+
+export function ShortenForm({ onShorten }: Props) {
   const [url, setUrl] = useState('');
   const [result, setResult] = useState<ShortenResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -17,6 +21,7 @@ export function ShortenForm() {
     try {
       const data = await shortenUrl(url.trim());
       setResult(data);
+      onShorten?.({ ...data, originalUrl: url.trim() });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
