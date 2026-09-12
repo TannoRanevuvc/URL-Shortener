@@ -10,6 +10,7 @@ export interface UserLinkItem {
   shortUrl: string;
   originalUrl: string;
   clicks: number;
+  uniqueClicks: number;
   createdAt: Date;
 }
 
@@ -42,12 +43,23 @@ export class UrlService {
     return { shortCode, shortUrl: `${this.baseUrl}/${shortCode}` };
   }
 
-  async resolveShortUrl(code: string): Promise<string> {
+  async resolveShortUrl(code: string, visitorIp: string): Promise<string> {
     const cacheKey = `url:${code}`;
-    const cached = await this.redis.get(cacheKey);
+    const visitorsKey = `visits:${code}`;
+
+    const [cached, isNewVisitor] = await Promise.all([
+      this.redis.get(cacheKey),
+      this.redis.sadd(visitorsKey, visitorIp).then((added) => added === 1),
+    ]);
+
+    const incrementAll = async (originalUrl: string) => {
+      await this.repo.incrementClicks(code);
+      if (isNewVisitor) await this.repo.incrementUniqueClicks(code);
+      return originalUrl;
+    };
 
     if (cached) {
-      this.repo.incrementClicks(code).catch((err: Error) =>
+      incrementAll(cached).catch((err: Error) =>
         console.error('[DB] Failed to increment clicks:', err.message),
       );
       return cached;
@@ -57,7 +69,7 @@ export class UrlService {
     if (!record) throw new AppError(404, `Short code "${code}" not found`);
 
     await this.redis.set(cacheKey, record.original_url, 'EX', CACHE_TTL);
-    await this.repo.incrementClicks(code);
+    await incrementAll(record.original_url);
 
     return record.original_url;
   }
@@ -70,6 +82,7 @@ export class UrlService {
       originalUrl: record.original_url,
       shortCode: record.short_code,
       clicks: record.clicks,
+      uniqueClicks: record.unique_clicks,
       createdAt: record.created_at,
     };
   }
@@ -81,6 +94,7 @@ export class UrlService {
       shortUrl: `${this.baseUrl}/${r.short_code}`,
       originalUrl: r.original_url,
       clicks: r.clicks,
+      uniqueClicks: r.unique_clicks,
       createdAt: r.created_at,
     }));
   }

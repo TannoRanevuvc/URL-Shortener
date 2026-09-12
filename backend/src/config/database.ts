@@ -19,8 +19,10 @@ export async function initDb(): Promise<void> {
       user_id VARCHAR(36) DEFAULT NULL
     )
   `);
-  // migrate existing tables that don't have user_id yet
   await pool.query(`
     ALTER TABLE urls ADD COLUMN IF NOT EXISTS user_id VARCHAR(36) DEFAULT NULL
+  `);
+  await pool.query(`
+    ALTER TABLE urls ADD COLUMN IF NOT EXISTS unique_clicks INTEGER DEFAULT 0
   `);
 }

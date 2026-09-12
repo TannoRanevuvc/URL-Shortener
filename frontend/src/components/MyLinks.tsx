@@ -79,6 +79,7 @@ export function MyLinks({ userId, refreshTrigger }: Props) {
               </div>
               <div className="my-links-stats">
                 <span><strong>{link.clicks}</strong> переходов</span>
+                <span><strong>{link.uniqueClicks}</strong> уникальных</span>
                 <span>Создано: {new Date(link.createdAt).toLocaleString('ru-RU')}</span>
               </div>
             </li>

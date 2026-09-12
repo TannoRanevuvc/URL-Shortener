@@ -17,7 +17,11 @@ export class UrlController {
   redirect: RequestHandler = async (req, res, next) => {
     try {
       const { shortCode } = req.params;
-      const originalUrl = await this.service.resolveShortUrl(shortCode);
+      const visitorIp =
+        (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0].trim() ??
+        req.ip ??
+        'unknown';
+      const originalUrl = await this.service.resolveShortUrl(shortCode, visitorIp);
       res.redirect(302, originalUrl);
     } catch (err) {
       next(err);

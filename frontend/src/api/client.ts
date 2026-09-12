@@ -7,6 +7,7 @@ export interface StatsResult {
   originalUrl: string;
   shortCode: string;
   clicks: number;
+  uniqueClicks: number;
   createdAt: string;
 }
 
@@ -15,6 +16,7 @@ export interface UserLink {
   shortUrl: string;
   originalUrl: string;
   clicks: number;
+  uniqueClicks: number;
   createdAt: string;
 }
 

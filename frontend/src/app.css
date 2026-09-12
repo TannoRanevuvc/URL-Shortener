@@ -199,6 +199,18 @@ body {
   border-radius: calc(var(--radius) - 2px);
 }
 
+.stats-row--double {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+}
+
+.stats-row--double > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
 .stats-label {
   font-size: 0.75rem;
   color: var(--text-muted);

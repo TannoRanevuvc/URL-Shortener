@@ -3,6 +3,7 @@ export interface UrlRecord {
   short_code: string;
   original_url: string;
   clicks: number;
+  unique_clicks: number;
   created_at: Date;
   user_id: string | null;
 }
@@ -16,6 +17,7 @@ export interface StatsResponse {
   originalUrl: string;
   shortCode: string;
   clicks: number;
+  uniqueClicks: number;
   createdAt: Date;
 }
 

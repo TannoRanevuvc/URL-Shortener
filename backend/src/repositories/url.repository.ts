@@ -24,6 +24,10 @@ export class UrlRepository {
     await this.db.query('UPDATE urls SET clicks = clicks + 1 WHERE short_code = $1', [code]);
   }
 
+  async incrementUniqueClicks(code: string): Promise<void> {
+    await this.db.query('UPDATE urls SET unique_clicks = unique_clicks + 1 WHERE short_code = $1', [code]);
+  }
+
   async findByUserId(userId: string): Promise<UrlRecord[]> {
     const { rows } = await this.db.query<UrlRecord>(
       'SELECT * FROM urls WHERE user_id = $1 ORDER BY created_at DESC',

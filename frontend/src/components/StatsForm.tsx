@@ -50,9 +50,15 @@ export function StatsForm() {
               {stats.originalUrl}
             </a>
           </div>
-          <div className="stats-row">
-            <span className="stats-label">Переходов</span>
-            <span className="stats-value clicks">{stats.clicks}</span>
+          <div className="stats-row stats-row--double">
+            <div>
+              <span className="stats-label">Всего переходов</span>
+              <span className="stats-value clicks">{stats.clicks}</span>
+            </div>
+            <div>
+              <span className="stats-label">Уникальных</span>
+              <span className="stats-value clicks">{stats.uniqueClicks}</span>
+            </div>
           </div>
           <div className="stats-row">
             <span className="stats-label">Создано</span>
