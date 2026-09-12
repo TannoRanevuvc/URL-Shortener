@@ -4,6 +4,7 @@ export interface UrlRecord {
   original_url: string;
   clicks: number;
   created_at: Date;
+  user_id: string | null;
 }
 
 export interface CreateUrlResult {

@@ -222,6 +222,23 @@ body {
 }
 
 /* My Links */
+.my-links-empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.my-links-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.my-links-header h2 {
+  margin-bottom: 0;
+}
+
 .my-links-section {
   margin-top: 2rem;
 }

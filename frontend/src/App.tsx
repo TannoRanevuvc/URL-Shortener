@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { ShortenForm } from './components/ShortenForm';
 import { StatsForm } from './components/StatsForm';
 import { MyLinks } from './components/MyLinks';
-import { useLocalLinks } from './hooks/useLocalLinks';
+import { useUserId } from './hooks/useUserId';
 import './app.css';
 
 export default function App() {
-  const { links, addLink, removeLink } = useLocalLinks();
+  const userId = useUserId();
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   return (
     <div className="page">
@@ -14,10 +16,10 @@ export default function App() {
         <p className="subtitle">Сокращайте длинные ссылки за секунду</p>
       </header>
       <main className="main">
-        <ShortenForm onShorten={addLink} />
+        <ShortenForm userId={userId} onShorten={() => setRefreshTrigger((n) => n + 1)} />
         <StatsForm />
       </main>
-      <MyLinks links={links} onRemove={removeLink} />
+      <MyLinks userId={userId} refreshTrigger={refreshTrigger} />
     </div>
   );
 }

@@ -1,9 +1,17 @@
 import { Redis } from 'ioredis';
 import { UrlRepository } from '../repositories/url.repository';
-import { AppError, CreateUrlResult, StatsResponse } from '../types';
+import { AppError, CreateUrlResult, StatsResponse, UrlRecord } from '../types';
 import { generateUniqueCode } from '../utils/codeGenerator';
 
 const CACHE_TTL = 3600;
+
+export interface UserLinkItem {
+  shortCode: string;
+  shortUrl: string;
+  originalUrl: string;
+  clicks: number;
+  createdAt: Date;
+}
 
 export class UrlService {
   constructor(
@@ -12,7 +20,7 @@ export class UrlService {
     private readonly baseUrl: string,
   ) {}
 
-  async createShortUrl(originalUrl: string): Promise<CreateUrlResult> {
+  async createShortUrl(originalUrl: string, userId: string | null): Promise<CreateUrlResult> {
     let parsed: URL;
     try {
       parsed = new URL(originalUrl);
@@ -29,7 +37,7 @@ export class UrlService {
     }
 
     const shortCode = await generateUniqueCode(this.repo);
-    await this.repo.create(shortCode, originalUrl);
+    await this.repo.create(shortCode, originalUrl, userId);
 
     return { shortCode, shortUrl: `${this.baseUrl}/${shortCode}` };
   }
@@ -39,7 +47,6 @@ export class UrlService {
     const cached = await this.redis.get(cacheKey);
 
     if (cached) {
-      // Increment clicks async — don't block the redirect
       this.repo.incrementClicks(code).catch((err: Error) =>
         console.error('[DB] Failed to increment clicks:', err.message),
       );
@@ -65,5 +72,16 @@ export class UrlService {
       clicks: record.clicks,
       createdAt: record.created_at,
     };
+  }
+
+  async getUserLinks(userId: string): Promise<UserLinkItem[]> {
+    const records: UrlRecord[] = await this.repo.findByUserId(userId);
+    return records.map((r) => ({
+      shortCode: r.short_code,
+      shortUrl: `${this.baseUrl}/${r.short_code}`,
+      originalUrl: r.original_url,
+      clicks: r.clicks,
+      createdAt: r.created_at,
+    }));
   }
 }

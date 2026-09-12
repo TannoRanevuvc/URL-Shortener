@@ -12,15 +12,23 @@ export class UrlRepository {
     return rows[0] ?? null;
   }
 
-  async create(code: string, originalUrl: string): Promise<UrlRecord> {
+  async create(code: string, originalUrl: string, userId: string | null): Promise<UrlRecord> {
     const { rows } = await this.db.query<UrlRecord>(
-      'INSERT INTO urls (short_code, original_url) VALUES ($1, $2) RETURNING *',
-      [code, originalUrl],
+      'INSERT INTO urls (short_code, original_url, user_id) VALUES ($1, $2, $3) RETURNING *',
+      [code, originalUrl, userId],
     );
     return rows[0];
   }
 
   async incrementClicks(code: string): Promise<void> {
     await this.db.query('UPDATE urls SET clicks = clicks + 1 WHERE short_code = $1', [code]);
+  }
+
+  async findByUserId(userId: string): Promise<UrlRecord[]> {
+    const { rows } = await this.db.query<UrlRecord>(
+      'SELECT * FROM urls WHERE user_id = $1 ORDER BY created_at DESC',
+      [userId],
+    );
+    return rows;
   }
 }
