@@ -8,7 +8,7 @@ interface Props {
 
 export function MyLinks({ userId, refreshTrigger }: Props) {
   const [links, setLinks] = useState<UserLink[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
