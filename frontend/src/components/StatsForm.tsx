@@ -16,7 +16,7 @@ export function StatsForm() {
       const data = await getStats(code.trim());
       setStats(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : 'Что-то пошло не так');
     } finally {
       setLoading(false);
     }
