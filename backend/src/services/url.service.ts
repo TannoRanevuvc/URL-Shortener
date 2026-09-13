@@ -72,10 +72,7 @@ export class UrlService {
       await this.redis.expire(visitorsKey, 30 * 24 * 3600, 'NX');
     }
 
-    const increment = async () => {
-      await this.repo.incrementClicks(code);
-      if (isNewVisitor) await this.repo.incrementUniqueClicks(code);
-    };
+    const increment = () => this.repo.incrementClicks(code, isNewVisitor);
 
     if (fromCache) {
       increment().catch((err: Error) =>

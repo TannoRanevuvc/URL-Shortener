@@ -25,12 +25,11 @@ export class UrlRepository {
     }
   }
 
-  async incrementClicks(code: string): Promise<void> {
-    await this.db.query('UPDATE urls SET clicks = clicks + 1 WHERE short_code = $1', [code]);
-  }
-
-  async incrementUniqueClicks(code: string): Promise<void> {
-    await this.db.query('UPDATE urls SET unique_clicks = unique_clicks + 1 WHERE short_code = $1', [code]);
+  async incrementClicks(code: string, unique: boolean): Promise<void> {
+    const query = unique
+      ? 'UPDATE urls SET clicks = clicks + 1, unique_clicks = unique_clicks + 1 WHERE short_code = $1'
+      : 'UPDATE urls SET clicks = clicks + 1 WHERE short_code = $1';
+    await this.db.query(query, [code]);
   }
 
   async findByUserId(userId: string): Promise<UrlRecord[]> {
