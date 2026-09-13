@@ -11,6 +11,7 @@ const shortenSchema = z.object({
 export function createRouter(controller: UrlController): Router {
   const router = Router();
 
+  router.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
   router.post('/api/shorten', validateBody(shortenSchema), controller.shorten);
   router.get('/api/stats/:shortCode', controller.stats);
   router.get('/api/links/:userId', controller.userLinks);
