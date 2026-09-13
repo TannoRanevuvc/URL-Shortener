@@ -50,33 +50,36 @@ export class UrlService {
 
   async resolveShortUrl(code: string, visitorIp: string): Promise<string> {
     const cacheKey = `url:${code}`;
-    const visitorsKey = `visits:${code}`;
 
-    const [cached, isNewVisitor] = await Promise.all([
-      this.redis.get(cacheKey),
-      this.redis.sadd(visitorsKey, visitorIp).then((added) => added === 1),
-    ]);
+    // Step 1: resolve URL — cache first, then DB
+    let originalUrl = await this.redis.get(cacheKey);
+    const fromCache = originalUrl !== null;
 
-    const incrementAll = async (originalUrl: string) => {
-      await this.repo.incrementClicks(code);
-      if (isNewVisitor) await this.repo.incrementUniqueClicks(code);
-      return originalUrl;
-    };
-
-    if (cached) {
-      incrementAll(cached).catch((err: Error) =>
-        console.error('[DB] Failed to increment clicks:', err.message),
-      );
-      return cached;
+    if (!fromCache) {
+      const record = await this.repo.findByCode(code);
+      if (!record) throw new AppError(404, `Short code "${code}" not found`);
+      originalUrl = record.original_url;
+      await this.redis.set(cacheKey, originalUrl, 'EX', CACHE_TTL);
     }
 
-    const record = await this.repo.findByCode(code);
-    if (!record) throw new AppError(404, `Short code "${code}" not found`);
+    // Step 2: track visits — only after confirming code exists
+    const visitorsKey = `visits:${code}`;
+    const isNewVisitor = (await this.redis.sadd(visitorsKey, visitorIp)) === 1;
 
-    await this.redis.set(cacheKey, record.original_url, 'EX', CACHE_TTL);
-    await incrementAll(record.original_url);
+    const increment = async () => {
+      await this.repo.incrementClicks(code);
+      if (isNewVisitor) await this.repo.incrementUniqueClicks(code);
+    };
 
-    return record.original_url;
+    if (fromCache) {
+      increment().catch((err: Error) =>
+        console.error('[DB] Failed to increment clicks:', err.message),
+      );
+    } else {
+      await increment();
+    }
+
+    return originalUrl as string;
   }
 
   async getStats(code: string): Promise<StatsResponse> {
