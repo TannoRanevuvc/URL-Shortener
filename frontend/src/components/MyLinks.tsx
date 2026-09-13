@@ -30,9 +30,13 @@ export function MyLinks({ userId, refreshTrigger }: Props) {
   }, [fetchLinks, refreshTrigger]);
 
   const handleCopy = async (shortUrl: string, shortCode: string) => {
-    await navigator.clipboard.writeText(shortUrl);
-    setCopiedCode(shortCode);
-    setTimeout(() => setCopiedCode(null), 2000);
+    try {
+      await navigator.clipboard.writeText(shortUrl);
+      setCopiedCode(shortCode);
+      setTimeout(() => setCopiedCode(null), 2000);
+    } catch {
+      setError('Не удалось скопировать — разрешите доступ к буферу обмена');
+    }
   };
 
   return (

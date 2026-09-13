@@ -32,9 +32,13 @@ export function ShortenForm({ userId, onShorten }: Props) {
 
   async function handleCopy() {
     if (!result) return;
-    await navigator.clipboard.writeText(result.shortUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(result.shortUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError('Не удалось скопировать — разрешите доступ к буферу обмена');
+    }
   }
 
   return (
