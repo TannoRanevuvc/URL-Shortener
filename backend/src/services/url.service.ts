@@ -65,6 +65,10 @@ export class UrlService {
     // Step 2: track visits — only after confirming code exists
     const visitorsKey = `visits:${code}`;
     const isNewVisitor = (await this.redis.sadd(visitorsKey, visitorIp)) === 1;
+    // Set TTL on first visitor so the key doesn't live forever (NX = only if no TTL yet)
+    if (isNewVisitor) {
+      await this.redis.expire(visitorsKey, 30 * 24 * 3600, 'NX');
+    }
 
     const increment = async () => {
       await this.repo.incrementClicks(code);
