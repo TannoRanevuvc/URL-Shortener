@@ -12,12 +12,17 @@ export class UrlRepository {
     return rows[0] ?? null;
   }
 
-  async create(code: string, originalUrl: string, userId: string | null): Promise<UrlRecord> {
-    const { rows } = await this.db.query<UrlRecord>(
-      'INSERT INTO urls (short_code, original_url, user_id) VALUES ($1, $2, $3) RETURNING *',
-      [code, originalUrl, userId],
-    );
-    return rows[0];
+  async tryCreate(code: string, originalUrl: string, userId: string | null): Promise<UrlRecord | null> {
+    try {
+      const { rows } = await this.db.query<UrlRecord>(
+        'INSERT INTO urls (short_code, original_url, user_id) VALUES ($1, $2, $3) RETURNING *',
+        [code, originalUrl, userId],
+      );
+      return rows[0];
+    } catch (err: unknown) {
+      if ((err as { code?: string }).code === '23505') return null; // unique_violation — retry
+      throw err;
+    }
   }
 
   async incrementClicks(code: string): Promise<void> {

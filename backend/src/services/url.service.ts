@@ -1,7 +1,7 @@
 import { Redis } from 'ioredis';
 import { UrlRepository } from '../repositories/url.repository';
 import { AppError, CreateUrlResult, StatsResponse, UrlRecord } from '../types';
-import { generateUniqueCode } from '../utils/codeGenerator';
+import { generateCode } from '../utils/codeGenerator';
 
 const CACHE_TTL = 3600;
 
@@ -42,10 +42,12 @@ export class UrlService {
       throw new AppError(400, 'Circular redirect: cannot shorten a URL that points to this service');
     }
 
-    const shortCode = await generateUniqueCode(this.repo);
-    await this.repo.create(shortCode, originalUrl, userId);
-
-    return { shortCode, shortUrl: `${this.baseUrl}/${shortCode}` };
+    for (let i = 0; i < 5; i++) {
+      const code = generateCode();
+      const record = await this.repo.tryCreate(code, originalUrl, userId);
+      if (record) return { shortCode: record.short_code, shortUrl: `${this.baseUrl}/${record.short_code}` };
+    }
+    throw new AppError(500, 'Failed to generate a unique short code');
   }
 
   async resolveShortUrl(code: string, visitorIp: string): Promise<string> {
