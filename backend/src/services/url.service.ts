@@ -33,7 +33,12 @@ export class UrlService {
       throw new AppError(400, 'Only HTTP and HTTPS URLs are allowed');
     }
 
-    if (originalUrl.startsWith(this.baseUrl)) {
+    const parsedBase = new URL(this.baseUrl);
+    if (
+      parsed.protocol === parsedBase.protocol &&
+      parsed.hostname === parsedBase.hostname &&
+      parsed.port === parsedBase.port
+    ) {
       throw new AppError(400, 'Circular redirect: cannot shorten a URL that points to this service');
     }
 
