@@ -15,14 +15,12 @@ export async function initDb(): Promise<void> {
       short_code VARCHAR(10) UNIQUE NOT NULL,
       original_url TEXT NOT NULL,
       clicks INTEGER DEFAULT 0,
+      unique_clicks INTEGER DEFAULT 0,
       created_at TIMESTAMP DEFAULT NOW(),
       user_id VARCHAR(36) DEFAULT NULL
     )
   `);
-  await pool.query(`
-    ALTER TABLE urls ADD COLUMN IF NOT EXISTS user_id VARCHAR(36) DEFAULT NULL
-  `);
-  await pool.query(`
-    ALTER TABLE urls ADD COLUMN IF NOT EXISTS unique_clicks INTEGER DEFAULT 0
-  `);
+  // migrations for existing deployments
+  await pool.query(`ALTER TABLE urls ADD COLUMN IF NOT EXISTS unique_clicks INTEGER DEFAULT 0`);
+  await pool.query(`ALTER TABLE urls ADD COLUMN IF NOT EXISTS user_id VARCHAR(36) DEFAULT NULL`);
 }
